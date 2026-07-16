@@ -1,9 +1,9 @@
 import express from "express";
-import mongoose, { mongo } from "mongoose";
-import cors from "cors";
-import dotend from "dotenv";
+import mongoose from "mongoose";import cors from "cors";
+import dotenv from "dotenv";
 
-dotend.config();
+
+dotenv.config();
 const app = express();
 
 //middleware
@@ -16,23 +16,21 @@ mongoose
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.log(err));
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //Main Code...
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // ==============USER================
 
@@ -53,32 +51,19 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-//Add model in User
-const User = mongoose.model("User", userSchema);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // ==============USER================
 //Add model in User
 const User = mongoose.model("User", userSchema);
 
+
+
+
 // /Signup Router make..
+
 //Creating user Model
+
 app.post("/api/auth/register", async (req, res) => {
   try {
     console.log("BODY:", req.body);
@@ -93,8 +78,15 @@ app.post("/api/auth/register", async (req, res) => {
 
     res.status(201).json({
       message: "User Created!",
-      user,
+
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
     });
+
+
   } catch (err) {
     console.log("REGISTER ERROR");
     console.log(err);
@@ -106,40 +98,50 @@ app.post("/api/auth/register", async (req, res) => {
   }
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 app.post("/api/auth/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+      const existingUser = await User.findOne({ email });
 
-    if (!user) {
-      return res.status(401).json({
-        message: "User not Found",
-      });
-    }
+      if (existingUser) {
+        return res.status(400).json({
+          message: "Email already exists",
+        });
+      }
 
     if (user.password !== password) {
       return res.status(401).json({
         message: "Invalid Password",
       });
     }
-res.status(200).json({
-  message: "login SuccessFully!",
-  user: {
-    id: user._id,
-    name: user.name,
-    email: user.email,
-  },
-});
-    
+    res.status(200).json({
+      message: "login SuccessFully!",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+      },
+    });
   } catch (err) {
     res.status(500).json({
       message: err.message,
     });
   }
 });
-
-
 
 
 
@@ -157,27 +159,26 @@ res.status(200).json({
 
 // // ==============PRODUCT================
 
-
-// const productSchema =new mongoose.schema( {
+// const productSchema =new mongoose.Schema( {
 //   name: {
 //     type: String,
-//     requird: true,
+//     required: true,
 //   },
 //   price: {
 //     type: String,
-//     requird: true,
+//     required: true,
 //   },
 //   description: {
 //     type: String,
-//     requird: true,
+//     required: true,
 //   },
 //   catagory: {
 //     type: String,
-//     requird: true,
+//     required: true,
 //   },
 //   image: {
 //     type: String,
-//     requird: true,
+//     required: true,
 //   },
 //   stock:{
 //      type: String,
@@ -187,7 +188,6 @@ res.status(200).json({
 // });
 
 // const Product=mongoose.model("product",productSchema);
-
 
 // app.post("/api/auth/product",async (req,res)=>{
 //   try{
@@ -230,29 +230,12 @@ res.status(200).json({
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // // ==============AddToCart==============
 const cartSchema = new mongoose.Schema({
-    id: {
-      type: Number,
-      required: true,
-    },
+  id: {
+    type: Number,
+    required: true,
+  },
   title: {
     type: String,
     required: true,
@@ -271,24 +254,15 @@ const cartSchema = new mongoose.Schema({
   },
   image: {
     type: String,
-    required:true,
+    required: true,
   },
 });
 
-const Cart=mongoose.model("cart",cartSchema);
+const Cart = mongoose.model("cart", cartSchema);
 
-
-app.post("/api/cart", async(req,res)=>{
-  try{
-    const {
-      id,
-      title,
-      price,
-      category,
-      rating,
-      image,
-
-    }=req.body;
+app.post("/api/cart", async (req, res) => {
+  try {
+    const { id, title, price, category, rating, image } = req.body;
 
     const cart = await Cart.create({
       id,
@@ -299,26 +273,16 @@ app.post("/api/cart", async(req,res)=>{
       image,
     });
 
-
     res.status(201).json({
-        message:"product add to cart!",
+      message: "product add to cart!",
       cart,
     });
-
-  }catch(err){
+  } catch (err) {
     res.status(500).json({
-      message:err.message,
+      message: err.message,
     });
   }
 });
-
-
-
-
-
-
-
-
 
 app.get("/api/cart", async (req, res) => {
   try {
@@ -331,27 +295,6 @@ app.get("/api/cart", async (req, res) => {
     });
   }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -379,27 +322,6 @@ app.delete("/api/cart/:id", async (req, res) => {
     });
   }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -464,10 +386,6 @@ const orderSchema = new mongoose.Schema({
 
 const Order = mongoose.model("Order", orderSchema);
 
-
-
-
-
 app.post("/api/orders", async (req, res) => {
   try {
     const { shippingAddress } = req.body;
@@ -505,6 +423,24 @@ app.post("/api/orders", async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 app.get("/api/orders", async (req, res) => {
   try {
     const orders = await Order.find();
@@ -517,90 +453,6 @@ app.get("/api/orders", async (req, res) => {
   }
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 app.get("/", (req, res) => {
   res.send("Backend is running SuccessFully!.. ");
 });
@@ -612,4 +464,10 @@ app.get("/home", (req, res) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`server runnong on ${PORT}`);
+});
+
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on ${PORT}`);
 });
