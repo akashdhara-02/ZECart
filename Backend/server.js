@@ -74,8 +74,16 @@ app.post("/api/auth/register", async (req, res) => {
     res.status(500).json({
       message: err.message,
     });
+          console.log(data);
+
   }
 });
+
+
+
+
+
+
 
 app.post("/api/auth/login", async (req, res) => {
   try {
