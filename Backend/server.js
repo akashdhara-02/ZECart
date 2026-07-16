@@ -1,7 +1,7 @@
 import express from "express";
-import mongoose from "mongoose";import cors from "cors";
+import mongoose from "mongoose";
+import cors from "cors";
 import dotenv from "dotenv";
-
 
 dotenv.config();
 const app = express();
@@ -15,20 +15,6 @@ mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.log(err));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //Main Code...
 
@@ -51,14 +37,9 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-
-
 // ==============USER================
 //Add model in User
 const User = mongoose.model("User", userSchema);
-
-
-
 
 // /Signup Router make..
 
@@ -85,8 +66,6 @@ app.post("/api/auth/register", async (req, res) => {
         email: user.email,
       },
     });
-
-
   } catch (err) {
     console.log("REGISTER ERROR");
     console.log(err);
@@ -98,30 +77,17 @@ app.post("/api/auth/register", async (req, res) => {
   }
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 app.post("/api/auth/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-      const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email });
 
-      if (existingUser) {
-        return res.status(400).json({
-          message: "Email already exists",
-        });
-      }
+    if (existingUser) {
+      return res.status(400).json({
+        message: "Email already exists",
+      });
+    }
 
     if (user.password !== password) {
       return res.status(401).json({
@@ -142,20 +108,6 @@ app.post("/api/auth/login", async (req, res) => {
     });
   }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // // ==============PRODUCT================
 
@@ -214,21 +166,6 @@ app.post("/api/auth/login", async (req, res) => {
 // app.get("/api/auth/product",(req,res)=>{
 //   res.send("Product Created!..");
 // });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // // ==============AddToCart==============
 const cartSchema = new mongoose.Schema({
@@ -296,17 +233,6 @@ app.get("/api/cart", async (req, res) => {
   }
 });
 
-
-
-
-
-
-
-
-
-
-
-
 app.delete("/api/cart/:id", async (req, res) => {
   try {
     const { id } = req.params;
@@ -322,37 +248,6 @@ app.delete("/api/cart/:id", async (req, res) => {
     });
   }
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // // ==============buy ==============
 
@@ -419,28 +314,6 @@ app.post("/api/orders", async (req, res) => {
   }
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 app.get("/api/orders", async (req, res) => {
   try {
     const orders = await Order.find();
@@ -464,10 +337,4 @@ app.get("/home", (req, res) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`server runnong on ${PORT}`);
-});
-
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on ${PORT}`);
 });
