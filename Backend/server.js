@@ -28,24 +28,6 @@ mongoose
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ==============USER================
 
 //Creating user Model
@@ -83,7 +65,7 @@ app.post("/api/auth/register", async (req, res) => {
       user,
     });
   } catch (err) {
-    // console.log(error)
+    console.log("REGISTER ERROR:", err);
 
     res.status(500).json({
       message: err.message,
