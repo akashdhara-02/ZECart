@@ -1,41 +1,93 @@
-import { lazy, Suspense } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
-import ProtectedRoute from "./components/ProtectedRoute";
+import { Routes, Route } from "react-router-dom";
+
 import Topbar from "./components/Topbar";
 import Botbar from "./components/Botbar";
-import Landing from "./pages/Landing"
+
+import PublicRoute from "./routes/PublicRoute";
+import PrivateRoute from "./routes/PrivateRoute";
+
+import Landing from "./pages/Landing";
+import Signup from "./pages/Signup";
+import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Categories from "./pages/Categories";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-import Cart from "./pages/Cart";
 import Profile from "./pages/Profile";
-import MyOrders from "./pages/MyOrders";
-import Settings from "./pages/Settings";
-import About from "./pages/About";
-import BuyNow from "./pages/BuyNow";
-
+// import Cart from "./pages/Cart";
 
 const App = () => {
   return (
-    <div className="bg-[#0f172a] ">
+    <div className="bg-[#0f172a] min-h-screen">
       <Topbar />
 
-      <div key={location.pathname}>
-        <Routes>
-          <Route path="/" element={<Landing />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/categories" element={<Categories />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/myorders" element={<MyOrders />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/BuyNow" element={<BuyNow />} />
-        </Routes>
-      </div>
+      <Routes>
+        {/* ========== PUBLIC ROUTES ========== */}
+
+        <Route
+          path="/"
+          element={
+            <PublicRoute>
+              <Landing />
+            </PublicRoute>
+          }
+        />
+
+        <Route
+          path="/signup"
+          element={
+            <PublicRoute>
+              <Signup />
+            </PublicRoute>
+          }
+        />
+
+        <Route
+          path="/login"
+          element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          }
+        />
+        
+
+        {/* ========== PRIVATE ROUTES ========== */}
+
+        <Route
+          path="/home"
+          element={
+            <PrivateRoute>
+              <Home />
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/categories"
+          element={
+            <PrivateRoute>
+              <Categories />
+            </PrivateRoute>
+          }
+        />
+
+        {/* <Route
+          path="/cart"
+          element={
+            <PrivateRoute>
+              <Cart />
+            </PrivateRoute>
+          }
+        /> */}
+
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <Profile />
+            </PrivateRoute>
+          }
+        />
+      </Routes>
 
       <Botbar />
     </div>

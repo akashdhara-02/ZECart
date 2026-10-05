@@ -4,18 +4,25 @@ import { AuthContext } from "../context/AuthContext.jsx";
 
 const Signup = () => {
   const { register } = useContext(AuthContext);
+
   const navigate = useNavigate();
 
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
   const [error, setError] = useState("");
-  
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
     setError("");
     try {
       await register(formData.name, formData.email, formData.password);
+
       navigate("/home");
     } catch (err) {
       setError(err.response?.data?.message || "Registration failed");
@@ -24,7 +31,9 @@ const Signup = () => {
 
   return (
     <div className="max-w-md mx-auto px-4 py-16 h-162 w-full">
-      <h1 className="text-2xl font-bold mb-6 text-center text-white">Create an Account</h1>
+      <h1 className="text-2xl font-bold mb-6 text-center text-white">
+        Create an Account
+      </h1>
 
       <form
         onSubmit={handleSubmit}
@@ -34,7 +43,7 @@ const Signup = () => {
 
         <input
           type="text"
-          name="name" 
+          name="name"
           placeholder="Full Name"
           value={formData.name}
           onChange={handleChange}

@@ -1,50 +1,110 @@
-import { createContext, useState, useEffect } from "react";
-import api from "../api/axios.js";
+import { createContext, useContext, useState, useEffect } from "react";
+import axios from "axios";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
+
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+ 
 
-  // On first load, check if a user was previously saved in localStorage
+
+
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) setUser(JSON.parse(savedUser));
-    setLoading(false);
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    axios
+      .get("http://localhost:5000/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      .then((response) => {
+        setUser(response.data.user);
+      })
+      .catch((error) => {
+        console.log("JWT verification failed:", error);
+        localStorage.removeItem("token");
+        setUser(null);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
   }, []);
 
-  const login = async (email, password) => {
-    const { data } = await api.post("/auth/login", { email, password });
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-    console.log(data);
-    setUser(data.user);
-  };
 
-  const register = async (name, email, password) => {
-    const { data } = await api.post("/auth/register", {
-      name,
+
+
+
+
+
+  // LOGIN
+  const login = async (email, password) => {
+    const response = await axios.post("http://localhost:5000/login", {
       email,
       password,
     });
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
-    console.log(data);
-    setUser(data.user);
+
+    setUser(response.data.user);
+    localStorage.setItem("token", response.data.token);
+    return response.data;
   };
 
+
+  
+
+  // REGISTER
+  const register = async (name, email, password) => {
+    try {
+      const response = await axios.post("http://localhost:5000/signup", {
+        name,
+        email,
+        password,
+      });
+
+      setUser(response.data.user);
+
+      return response.data;
+    } catch (error) {
+      console.log("Registration Error:", error);
+      throw error;
+    }
+  };
+
+
+
+
+
+  
+  // LOGOUT
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
     setUser(null);
+    localStorage.removeItem("token");
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, setUser, login, register, logout, loading }}
+      value={{
+        user,
+        setUser,
+        loading,
+        login,
+        register,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>
   );
+};
+
+// Custom Hook
+export const useAuth = () => {
+  return useContext(AuthContext);
 };

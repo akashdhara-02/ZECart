@@ -1,6 +1,27 @@
-import React from "react";
+import { Link, Navigate, useNavigate } from "react-router-dom";
+
+import { AuthContext } from "../context/AuthContext";
+import { useContext } from "react";
 
 const Profile = () => {
+
+
+    const {logout}=useContext(AuthContext);
+
+    const navigate=useNavigate();
+
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+    alert("Logged out");
+  };
+
+
+
+
+
+
   return (
     <div className="min-h-screen bg-slate-950 text-white py-10 px-6">
       <div className="max-w-4xl mx-auto">
@@ -81,7 +102,8 @@ const Profile = () => {
               My Orders
             </button>
 
-            <button className="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-xl font-semibold">
+            <button className="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-xl font-semibold"
+            onClick={handleLogout}>
               Logout
             </button>
           </div>

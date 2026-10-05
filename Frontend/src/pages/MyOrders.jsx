@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import api from "../api/axios.js";
+
 
 const MyOrders = () => {
   const [orders, setOrders] = useState([]);

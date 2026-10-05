@@ -3,52 +3,44 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 
+import jwt from "jsonwebtoken";
+
 dotenv.config();
+
 const app = express();
 
-//middleware
+// ================= MIDDLEWARE =================
+
 app.use(cors());
 app.use(express.json());
 
-//MongoDB Connection..
+// ================= MONGODB =================
+
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
-  .catch((err) => console.log(err));
+  .catch((err) => console.log("MongoDB Error:", err));
 
-//Main Code...
+// =================================================
+//                    USER
+// ================================================= 
 
-// ==============USER================
+// User Schema
 
-//Creating user Model
 const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  password: {
-    type: String,
-    required: true,
-  },
+  name: String,
+  email: String,
+  password: String,
 });
 
-// ==============USER================
-//Add model in User
+// User Model
+
 const User = mongoose.model("User", userSchema);
 
-// /Signup Router make..
+// ================= SIGNUP =================
 
-//Creating user Model
-
-app.post("/api/auth/register", async (req, res) => {
+app.post("/signup", async (req, res) => {
   try {
-    console.log("BODY:", req.body);
-
     const { name, email, password } = req.body;
 
     const user = await User.create({
@@ -58,218 +50,195 @@ app.post("/api/auth/register", async (req, res) => {
     });
 
     res.status(201).json({
-      message: "User Created!",
-
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-      },
+      message: "Signup Successful",
+      user,
     });
-  } catch (err) {
-    console.log("REGISTER ERROR");
-    console.log(err);
-    console.log(err.message);
+  } catch (error) {
+    console.log("Signup Error:", error);
 
     res.status(500).json({
-      message: err.message,
+      message: "Signup Failed",
+      error: error.message,
     });
-          console.log(data);
-
   }
 });
 
 
 
+// ================= LOGIN =================
 
-
-
-
-app.post("/api/auth/login", async (req, res) => {
+app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const existingUser = await User.findOne({ email });
+    // Find user
+    const user = await User.findOne({ email });
 
-    if (existingUser) {
-      return res.status(400).json({
-        message: "Email already exists",
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
       });
     }
 
+    // Check password
     if (user.password !== password) {
       return res.status(401).json({
-        message: "Invalid Password",
+        message: "Invalid password",
       });
     }
-    res.status(200).json({
-      message: "login SuccessFully!",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-      },
+
+
+    //JWT token genrtaion...
+    const token = jwt.sign({ userId: user._id }, "mySecrectKey", {
+      expiresIn: "1h",
     });
-  } catch (err) {
+
+
+    res.status(200).json({
+      message: "Login successful",
+      user,
+      token,
+    });
+  } catch (error) {
+    console.log("Login Error:", error);
+
     res.status(500).json({
-      message: err.message,
+      message: error.message,
     });
   }
 });
 
-// // ==============PRODUCT================
 
-// const productSchema =new mongoose.Schema( {
-//   name: {
-//     type: String,
-//     required: true,
-//   },
-//   price: {
-//     type: String,
-//     required: true,
-//   },
-//   description: {
-//     type: String,
-//     required: true,
-//   },
-//   catagory: {
-//     type: String,
-//     required: true,
-//   },
-//   image: {
-//     type: String,
-//     required: true,
-//   },
-//   stock:{
-//      type: String,
-//      default:0,
-//   },
 
-// });
 
-// const Product=mongoose.model("product",productSchema);
 
-// app.post("/api/auth/product",async (req,res)=>{
-//   try{
-//       const {name,price,description,catagoey,image,stock}= req.body;
-//       const product= await product.create({
-//         name,
-//         price,
-//         description,
-//         catagory,
-//         image,
-//         stock,
-//       });
-//   res.status(201).json({
-//     message:"product created!",
-//     product,
-//   })
-//   }catch(err){
-//     res.status(500).json({
-//       message:err.message,
-//     })
-//   }
-// });
 
-// app.get("/api/auth/product",(req,res)=>{
-//   res.send("Product Created!..");
-// });
 
-// // ==============AddToCart==============
-const cartSchema = new mongoose.Schema({
-  id: {
-    type: Number,
-    required: true,
-  },
-  title: {
-    type: String,
-    required: true,
-  },
-  price: {
-    type: Number,
-    required: true,
-  },
-  category: {
-    type: String,
-    required: true,
-  },
-  rating: {
-    type: Number,
-    default: 1,
-  },
-  image: {
-    type: String,
-    required: true,
-  },
+// ================= JWT MIDDLEWARE =================
+
+const verifyToken = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+      return res.status(401).json({
+        message: "No token provided",
+      });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    const decoded = jwt.verify(token, "mySecrectKey");
+
+    req.userId = decoded.userId;
+
+    next();
+  } catch (error) {
+    return res.status(401).json({
+      message: "Invalid or expired token",
+    });
+  }
+};
+
+app.get("/me",verifyToken,async(req,res)=>{
+  try{
+    const user=await User.findById(req.userId).select("-password");
+    if(!user){
+      return res.status(404).json({
+        message:"User not found",
+      });
+    }
+      res.status(200).json({
+      user,
+      });
+  }catch(err){
+    res.status(500).json({
+      message:error.message,
+    });
+  }
 });
 
-const Cart = mongoose.model("cart", cartSchema);
 
-app.post("/api/cart", async (req, res) => {
+
+
+
+
+
+
+
+
+
+
+
+
+// =================================================
+//                    CART
+// =================================================
+
+const cartSchema = new mongoose.Schema({
+  id: Number,
+  title: String,
+  price: Number,
+  category: String,
+  rating: Number,
+  image: String,
+});
+
+const Cart = mongoose.model("Cart", cartSchema);
+
+// ================= ADD TO CART =================
+
+app.post("/cart", async (req, res) => {
   try {
-    const { id, title, price, category, rating, image } = req.body;
-
-    const cart = await Cart.create({
-      id,
-      title,
-      price,
-      category,
-      rating,
-      image,
-    });
+    const product = await Cart.create(req.body);
 
     res.status(201).json({
-      message: "product add to cart!",
-      cart,
+      message: "Product added to cart",
+      product,
     });
-  } catch (err) {
+  } catch (error) {
     res.status(500).json({
-      message: err.message,
+      message: error.message,
     });
   }
 });
 
-app.get("/api/cart", async (req, res) => {
+// ================= GET CART =================
+
+app.get("/cart", async (req, res) => {
   try {
     const cart = await Cart.find();
 
     res.status(200).json(cart);
-  } catch (err) {
+  } catch (error) {
     res.status(500).json({
-      message: err.message,
+      message: error.message,
     });
   }
 });
 
-app.delete("/api/cart/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
+// ================= DELETE CART =================
 
-    await Cart.findByIdAndDelete(id);
+app.delete("/cart/:id", async (req, res) => {
+  try {
+    await Cart.findByIdAndDelete(req.params.id);
 
     const cart = await Cart.find();
 
     res.status(200).json(cart);
-  } catch (err) {
+  } catch (error) {
     res.status(500).json({
-      message: err.message,
+      message: error.message,
     });
   }
 });
 
-// // ==============buy ==============
+// =================================================
+//                    ORDERS
+// =================================================
 
 const orderSchema = new mongoose.Schema({
-  items: [
-    {
-      id: Number,
-      title: String,
-      price: Number,
-      category: String,
-      rating: Number,
-      image: String,
-    },
-  ],
+  items: Array,
 
   shippingAddress: {
     type: String,
@@ -289,7 +258,9 @@ const orderSchema = new mongoose.Schema({
 
 const Order = mongoose.model("Order", orderSchema);
 
-app.post("/api/orders", async (req, res) => {
+// ================= CREATE ORDER =================
+
+app.post("/orders", async (req, res) => {
   try {
     const { shippingAddress } = req.body;
 
@@ -301,7 +272,7 @@ app.post("/api/orders", async (req, res) => {
       });
     }
 
-    const totalPrice = cart.reduce((sum, item) => sum + item.price, 0);
+    const totalPrice = cart.reduce((total, item) => total + item.price, 0);
 
     const order = await Order.create({
       items: cart,
@@ -309,40 +280,46 @@ app.post("/api/orders", async (req, res) => {
       totalPrice,
     });
 
+    // Empty cart after order
     await Cart.deleteMany();
 
     res.status(201).json({
-      message: "Order placed successfully!",
+      message: "Order placed successfully",
       order,
     });
-  } catch (err) {
+  } catch (error) {
     res.status(500).json({
-      message: err.message,
+      message: error.message,
     });
   }
 });
 
-app.get("/api/orders", async (req, res) => {
+// ================= GET ORDERS =================
+
+app.get("/orders", async (req, res) => {
   try {
     const orders = await Order.find();
 
     res.status(200).json(orders);
-  } catch (err) {
+  } catch (error) {
     res.status(500).json({
-      message: err.message,
+      message: error.message,
     });
   }
 });
 
+// =================================================
+//                    TEST
+// =================================================
+
 app.get("/", (req, res) => {
-  res.send("Backend is running SuccessFully!.. ");
+  res.send("Backend is running successfully!");
 });
 
-app.get("/home", (req, res) => {
-  res.send("Welcome sir !..");
-});
+// ================= SERVER =================
 
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, () => {
-  console.log(`server runnong on ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

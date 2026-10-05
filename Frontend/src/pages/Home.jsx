@@ -1,7 +1,5 @@
-import { useState, useMemo, useContext } from "react";
-import { Link } from "react-router-dom";
-import { CartContext } from "../context/CartContext";
-import BuyNow from "./BuyNow";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 const products = [
   {
@@ -263,29 +261,30 @@ const products = [
 ];
 
 const Home = () => {
-  const { addToCart } = useContext(CartContext);
-
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
 
-  const categories = ["All", ...new Set(products.map((item) => item.category))];
+  const categories = [
+    "All",
+    ...new Set(products.map((product) => product.category)),
+  ];
 
-  const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
-      const matchCategory = category === "All" || product.category === category;
+  const filteredProducts = products.filter((product) => {
+    const matchesSearch = product.title
+      .toLowerCase()
+      .includes(search.toLowerCase());
 
-      const matchSearch = product.title
-        .toLowerCase()
-        .includes(search.toLowerCase());
+    const matchesCategory = category === "All" || product.category === category;
 
-      return matchCategory && matchSearch;
-    });
-  }, [search, category]);
+    return matchesSearch && matchesCategory;
+  });
+
+  const addToCart = (product) => {
+    console.log("Added to cart:", product);
+  };
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-white">
-      {/* Hero */}
-
       <div className="max-w-7xl mx-auto px-6 pt-10">
         <div className="bg-gradient-to-r from-indigo-700 via-purple-700 to-blue-700 rounded-3xl p-10 flex flex-col lg:flex-row justify-between items-center gap-8 shadow-2xl">
           <div>
