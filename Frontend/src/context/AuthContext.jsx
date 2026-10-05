@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }) => {
 
   // LOGIN
   const login = async (email, password) => {
-    const response = await axios.post("http://localhost:5000/login", {
+    const response = await axios.post("https://zecart-1.onrender.com/login", {
       email,
       password,
     });
@@ -62,11 +62,14 @@ export const AuthProvider = ({ children }) => {
   // REGISTER
   const register = async (name, email, password) => {
     try {
-      const response = await axios.post("http://localhost:5000/signup", {
-        name,
-        email,
-        password,
-      });
+      const response = await axios.post(
+        "https://zecart-1.onrender.com/signup",
+        {
+          name,
+          email,
+          password,
+        },
+      );
 
       setUser(response.data.user);
 
